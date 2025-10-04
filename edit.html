@@ -8,14 +8,17 @@
     
     <style>
         /* =================================
-           1. CSS للتصميم العام
+           1. CSS للتصميم العام (مع إضافة خلفية متدرجة)
            ================================= */
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
-            background-color: #f4f4f9;
+            /* تم استبدال background-color بخلفية متدرجة */
+            background: linear-gradient(to bottom right, #e0f2f7, #d7e8f5); /* تدرج أزرق فاتح وبنفسجي فاتح */
+            background-attachment: fixed; /* لتثبيت الخلفية عند التمرير */
             padding-bottom: 70px; 
             direction: rtl;
+            color: #333; /* لون نص افتراضي للمحتوى العام */
         }
 
         h1 {
@@ -35,6 +38,428 @@
         }
 
         /* =================================
+           2. شاشة الرئيسية (الأزرار)
+           ================================= */
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .category-button {
+            background-color: white;
+            color: #4a4a4a;
+            padding: 20px 10px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .category-button.pink {
+            background-color: #fce8ee;
+            color: #c9375e;
+        }
+
+        .category-button.full-width {
+            grid-column: span 2;
+        }
+        
+        /* =================================
+           3. بطاقات الاقتباسات
+           ================================= */
+        .quote-card {
+            background-color: white;
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .quote-text {
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.7;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .quote-actions {
+            display: flex;
+            justify-content: space-around; 
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .quote-actions .icon {
+            font-size: 1.4em;
+            color: #777;
+            cursor: pointer;
+            transition: color 0.2s;
+            flex-grow: 1; 
+            text-align: center;
+        }
+        
+        /* الأيقونة عند التفعيل/الإضافة للمفضلة */
+        .icon.favorited {
+            color: #ff4d6d !important;
+        }
+        
+        /* =================================
+           4. شاشة حول التطبيق (About)
+           ================================= */
+        .about-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .about-content h2 {
+            color: #007bff;
+            margin-top: 0;
+            font-size: 1.6em;
+        }
+
+        .about-content p {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        /* =================================
+           5. شريط التنقل السفلي
+           ================================= */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            height: 60px;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: #999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8em;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: #007bff;
+        }
+
+        .nav-item i {
+            font-size: 1.5em;
+            margin-bottom: 3px;
+        }
+        
+        /* زر الرجوع في شاشة الاقتباسات */
+        #back-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.8em;
+            color: #333;
+            cursor: pointer;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="home-screen" class="app-screen" style="display: block;">
+        <h1>تصنيفات الاقتباسات ✨</h1>
+        
+        <div class="button-grid">
+            <button class="category-button" data-category="long" data-target="quotes">كتابات طويلة</button>
+            <button class="category-button pink" data-category="love" data-target="quotes">اقتباسات حب</button>
+            <button class="category-button full-width" data-category="short" data-target="quotes">اقتباسات قصيرة</button>
+            <button class="category-button" data-category="mix" data-target="quotes">عربي وانكليزي</button>
+            <button class="category-button pink" data-category="friends" data-target="quotes">اقتباسات صداقة</button>
+        </div>
+    </div>
+
+    <div id="quotes-screen" class="app-screen">
+        <i id="back-button" class="fas fa-arrow-right"></i>
+        <h1 id="quotes-title"></h1> 
+
+        <div id="quotes-container">
+            </div>
+    </div>
+
+    <div id="favorites-screen" class="app-screen">
+        <h1>المفضلة ❤️</h1>
+        <div id="favorites-container">
+            <p style="text-align: center; color: #777;">لم تقم بإضافة أي اقتباسات إلى المفضلة بعد. انقر على القلب لحفظ الاقتباسات!</p>
+        </div>
+    </div>
+
+    <div id="about-screen" class="app-screen">
+        <h1>حول التطبيق ℹ️</h1>
+        <div class="about-content">
+            <h2>تطبيق اقتباساتي</h2>
+            <p>هذا التطبيق مصمم ليوفر لك مجموعة متنوعة من أجمل الاقتباسات والكلمات الرائعة، منظمة في تصنيفات ليسهل الوصول إليها.</p>
+            <p>يمكنك حفظ الاقتباسات المفضلة لديك للعودة إليها لاحقاً، ونسخها أو مشاركتها بكل سهولة مع أصدقائك عبر مختلف منصات التواصل.</p>
+            <hr style="border-color: #eee;">
+            <p><strong>الإصدار:</strong> 1.0.0</p>
+            <p><strong>المطور:</strong> Gemini AI</p>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" data-target="home-screen">
+            <i class="fas fa-home"></i> الرئيسية
+        </a>
+        <a href="#" class="nav-item" data-target="favorites-screen">
+            <i class="fas fa-heart"></i> المفضلة
+        </a>
+        <a href="#" class="nav-item" data-target="about-screen">
+            <i class="fas fa-info-circle"></i> حول
+        </a>
+    </nav>
+
+    <script>
+        /* =================================
+           JavaScript للوظائف العامة ومنطق التطبيق
+           ================================= */
+
+        // قاعدة بيانات افتراضية للاقتباسات
+        const ALL_QUOTES = {
+            love: [
+                { id: 1, text: "لا أستطيعُ وصفَ قَلْبي بدقةٍ عندما أحدثُك أشعُرُ بِأنهُ يضيءُ" },
+                { id: 2, text: "ويكفيني أنني حينما أنظر إليك أعود إلى هدوئي دون جهد أو تفكير." },
+                { id: 3, text: "أجمل ما قد يحدث، أن تجد شخصًا يشبهك في كل شيء، كأنما خُلقت روحك على هيئة شخص آخر." }
+            ],
+            friends: [
+                { id: 4, text: "إلى الرفاق الذين مازالوا يتظاهرون بالقوة رغم أذيّة الحق، سلام على قلوبكم." },
+                { id: 5, text: "جئتك كما لو كنت كل الأصدقاء الذين عرفتهم وكل الأصدقاء الذين معي." }
+            ],
+            long: [
+                { id: 6, text: "الكتابات الطويلة هي فن، تتطلب منك أن تكون قادراً على الإبحار بالقارئ في بحر من الكلمات دون أن يشعر بالملل، كأنك ترسم عالماً كاملاً بفرشاة من الحروف." }
+            ],
+            short: [
+                { id: 7, text: "الهدوء هو أقوى أشكال الحكمة." },
+                { id: 8, text: "لا تؤجل سعادتك." }
+            ],
+            mix: [
+                 { id: 9, text: "الناس يبتعدون عنّا كلّما اقتربنا من الحقيقة. People move away from us the closer we get to the truth." }
+            ]
+        };
+
+        // ===================================
+        // وظائف التفاعل الرئيسية (المفضلة، النسخ، المشاركة)
+        // ===================================
+
+        // 1. المفضلة: تبديل حالة الحفظ في localStorage
+        function toggleFavorite(element, quoteId) {
+            const favorites = getFavorites();
+            const index = favorites.indexOf(quoteId);
+
+            if (index === -1) {
+                favorites.push(quoteId);
+                element.classList.add('favorited');
+                alert("تمت إضافة الاقتباس إلى المفضلة! ❤️");
+            } else {
+                favorites.splice(index, 1);
+                element.classList.remove('favorited');
+                alert("تمت إزالة الاقتباس من المفضلة.");
+            }
+
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            
+            // تحديث شاشة المفضلة إذا كانت معروضة
+            if (document.getElementById('favorites-screen').style.display === 'block') {
+                renderFavorites();
+            }
+        }
+
+        // 2. النسخ: نسخ نص الاقتباس إلى الحافظة (مُحسَّن)
+        function copyQuote(text) {
+            // استخدام الطريقة الكلاسيكية كخيار مضمون
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            
+            textarea.style.position = 'fixed'; 
+            textarea.style.opacity = '0';
+            
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert('تم نسخ الاقتباس إلى الحافظة! 📋');
+            } catch (err) {
+                console.error('فشل في النسخ الكلاسيكي: ', err);
+                alert('فشل في النسخ. الرجاء المحاولة يدويًا.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // 3. المشاركة: استخدام واجهة مشاركة الويب الأصلية
+        function shareQuote(quoteText) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'اقتباس من تطبيقي',
+                    text: quoteText,
+                    url: document.URL 
+                }).then(() => {
+                    console.log('تمت المشاركة بنجاح');
+                }).catch(error => {
+                    alert('المشاركة عبر المتصفح غير مدعومة. تم نسخ النص بدلاً من ذلك.');
+                    copyQuote(quoteText); 
+                });
+            } else {
+                alert('المشاركة عبر المتصفح غير مدعومة. تم نسخ النص بدلاً من ذلك.');
+                copyQuote(quoteText); 
+            }
+        }
+        
+        // ===================================
+        // وظائف عرض المحتوى
+        // ===================================
+        
+        // جلب قائمة المفضلة من الذاكرة المحلية
+        function getFavorites() {
+            const favoritesJson = localStorage.getItem('favorites');
+            return favoritesJson ? JSON.parse(favoritesJson) : [];
+        }
+
+        // إنشاء HTML لبطاقة الاقتباس
+        function createQuoteCardHTML(quote) {
+            const favorites = getFavorites();
+            const isFavorited = favorites.includes(quote.id);
+            const favoriteClass = isFavorited ? 'favorited' : '';
+            
+            // نحتاج إلى النص كاملاً لنسخه ومشاركته (مع إزالة علامات الاقتباس الخارجية)
+            const textToCopy = quote.text.replace(/"/g, "").trim(); 
+
+            return `
+                <div class="quote-card">
+                    <p class="quote-text">"${quote.text}"</p>
+                    <div class="quote-actions">
+                        <i class="icon fas fa-heart ${favoriteClass}" 
+                           onclick="toggleFavorite(this, ${quote.id})" title="المفضلة"></i>
+                        
+                        <i class="icon fas fa-copy" 
+                           onclick="copyQuote('${textToCopy}')" title="نسخ النص"></i>
+                           
+                        <i class="icon fas fa-share-alt" 
+                           onclick="shareQuote('${textToCopy}')" title="مشاركة"></i>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // عرض الاقتباسات في صفحة الاقتباسات
+        function renderQuotes(categoryKey, categoryName) {
+            const quotes = ALL_QUOTES[categoryKey] || [];
+            const container = document.getElementById('quotes-container');
+            const title = document.getElementById('quotes-title');
+            
+            title.textContent = categoryName;
+            container.innerHTML = quotes.map(createQuoteCardHTML).join('');
+        }
+
+        // عرض الاقتباسات في صفحة المفضلة
+        function renderFavorites() {
+            const favoritesIds = getFavorites();
+            const container = document.getElementById('favorites-container');
+            
+            const allQuotes = Object.values(ALL_QUOTES).flat();
+            const favoriteQuotes = allQuotes.filter(q => favoritesIds.includes(q.id));
+
+            if (favoriteQuotes.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #777;">لم تقم بإضافة أي اقتباسات إلى المفضلة بعد. انقر على القلب لحفظ الاقتباسات!</p>';
+            } else {
+                container.innerHTML = favoriteQuotes.map(createQuoteCardHTML).join('');
+            }
+        }
+
+
+        // ===================================
+        // منطق التنقل والربط بالـ DOMContentLoaded
+        // ===================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // ملاحظة: تم تغيير اسم المتغير من 'profile-screen' إلى 'about-screen'
+            const appScreens = document.querySelectorAll('.app-screen');
+            const categoryButtons = document.querySelectorAll('.category-button');
+            const backButton = document.getElementById('back-button');
+            const navItems = document.querySelectorAll('.nav-item');
+
+            // وظيفة لإظهار الشاشة المطلوبة وإخفاء البقية
+            function showScreen(screenId) {
+                appScreens.forEach(screen => {
+                    screen.style.display = 'none';
+                });
+                
+                const targetScreen = document.getElementById(screenId);
+                if (targetScreen) {
+                    targetScreen.style.display = 'block';
+                }
+            }
+            
+            // 1. تفعيل أزرار التصنيفات
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const categoryKey = button.getAttribute('data-category');
+                    const categoryName = button.textContent.trim();
+                    
+                    renderQuotes(categoryKey, categoryName);
+                    showScreen('quotes-screen');
+                    
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    document.querySelector('.nav-item[data-target="home-screen"]').classList.add('active');
+                });
+            });
+
+            // 2. زر الرجوع
+            backButton.addEventListener('click', () => {
+                showScreen('home-screen');
+            });
+
+            // 3. شريط التنقل السفلي
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+
+                    const targetScreenId = item.getAttribute('data-target');
+                    showScreen(targetScreenId);
+                    
+                    if (targetScreenId === 'favorites-screen') {
+                        renderFavorites();
+                    }
+                });
+            });
+
+            // الإعداد الافتراضي عند تحميل الصفحة:
+            showScreen('home-screen'); 
+        });
+    </script>
+
+</body>
+</html>        /* =================================
            2. شاشة الرئيسية (الأزرار)
            ================================= */
         .button-grid {
